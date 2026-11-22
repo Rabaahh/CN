@@ -1,0 +1,201 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>THE GRID: PACKET RUNNER | PCCST501 Computer Networks RPG</title>
+    <link rel="stylesheet" href="css/cyber_grid.css">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Fira+Code:wght@400;600;700&display=swap" rel="stylesheet">
+</head>
+<body>
+
+    <!-- Main Application Shell -->
+    <div id="app-shell">
+
+        <!-- Top Cyber HUD Bar (Clean Vitals & System Bar) -->
+        <header id="hud-header">
+            
+            <!-- Section 1: Player Entity Status & Vitals -->
+            <div class="hud-section">
+                <div class="unit-badge">
+                    <div class="unit-icon"></div>
+                    <div class="unit-info">
+                        <h2>UNIT 0xVOID</h2>
+                        <span>PACKET [IPv4_DATAGRAM]</span>
+                    </div>
+                </div>
+
+                <!-- Gauges: Integrity, Buffer, TTL -->
+                <div class="gauge-cluster">
+                    <!-- Integrity (HP) -->
+                    <div class="gauge-item" data-tooltip="Datagram Integrity: Signal health (fades over distance due to attenuation)">
+                        <div class="gauge-label">
+                            <span>INTEGRITY</span>
+                            <span class="gauge-value" id="val-hp">100/100</span>
+                        </div>
+                        <div class="gauge-track">
+                            <div class="gauge-fill hp" id="fill-hp" style="width: 100%;"></div>
+                        </div>
+                    </div>
+
+                    <!-- Buffer Capacity (Energy) -->
+                    <div class="gauge-item" data-tooltip="Buffer Capacity: Internal router buffer memory (depletes if overloaded)">
+                        <div class="gauge-label">
+                            <span>BUFFER</span>
+                            <span class="gauge-value" id="val-buffer">100/100</span>
+                        </div>
+                        <div class="gauge-track">
+                            <div class="gauge-fill energy" id="fill-buffer" style="width: 100%;"></div>
+                        </div>
+                    </div>
+
+                    <!-- Time-To-Live (TTL Hops) -->
+                    <div class="gauge-item" data-tooltip="Time-To-Live (RFC 791): Maximum router hops before ICMP Time Exceeded packet drop">
+                        <div class="gauge-label">
+                            <span>TTL</span>
+                            <span class="gauge-value" id="val-ttl">64 HOPS</span>
+                        </div>
+                        <div class="gauge-track">
+                            <div class="gauge-fill ttl" id="fill-ttl" style="width: 100%;"></div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Section 2: Network Telemetry & System Utilities -->
+            <div class="hud-section">
+                <div class="telemetry-cluster">
+                    <div class="telemetry-tag" data-tooltip="Current KTU Syllabus Module & OSI/TCP-IP Network Layer">
+                        <span class="lbl">NETWORK LAYER</span>
+                        <span class="val" id="val-layer">MOD 4: PHY</span>
+                    </div>
+                    <div class="telemetry-tag" data-tooltip="Channel Data Rate (Nyquist & Shannon theoretical channel limits)">
+                        <span class="lbl">BANDWIDTH</span>
+                        <span class="val amber" id="val-rate">10 Mbps</span>
+                    </div>
+                </div>
+
+                <!-- System Controls Dock -->
+                <div class="system-dock">
+                    <button class="cyber-btn" id="btn-music" data-tooltip="Toggle dynamic synthwave soundtrack [M]">
+                        <span id="music-btn-label">🎵 MUSIC</span>
+                    </button>
+                    <button class="cyber-btn" id="btn-save" data-tooltip="Save current progress and exam marks to browser storage [F5]">
+                        <span>💾 SAVE</span>
+                    </button>
+                    <button class="cyber-btn amber" id="btn-reset" data-tooltip="Purge local storage and restart fresh from Sector 1">
+                        <span>🔄 RESET</span>
+                    </button>
+                    <button class="cyber-btn amber" id="btn-pause" data-tooltip="Pause simulation clock & freeze packet buffers [P]">
+                        <span>⏸️ PAUSE</span>
+                    </button>
+                </div>
+            </div>
+
+        </header>
+
+        <!-- Center Viewport Container: Double-Buffered Scalable Canvas -->
+        <main id="viewport-container">
+            <canvas id="gameCanvas" width="1280" height="720"></canvas>
+
+            <!-- Pause Overlay Modal -->
+            <div id="pause-overlay" class="hidden">
+                <div class="pause-dialog">
+                    <h1>TRANSMISSION PAUSED</h1>
+                    <p>SYSTEM CLOCK FROZEN // PACKET BUFFERS ON HOLD</p>
+                    <div style="display:flex; justify-content:center; gap:12px; margin-top:8px;">
+                        <button class="cyber-btn" id="btn-resume">RESUME TRANSMISSION [P]</button>
+                    </div>
+                </div>
+            </div>
+        </main>
+
+        <!-- Bottom Academic Command Dock & Exam Score -->
+        <footer id="hud-footer">
+            <div class="study-dock">
+                <button class="cyber-btn cyan-glow" id="btn-study" data-tooltip="Open KTU Syllabus Study Guide & Interactive Notes [B]">
+                    <span>📚 STUDY GUIDE [B]</span>
+                </button>
+                <button class="cyber-btn magenta" id="btn-exam" data-tooltip="Launch 2h 30m simulated KTU semester exam (60 Marks) [X]">
+                    <span>⏱️ 60M MOCK [X]</span>
+                </button>
+                <button class="cyber-btn" id="btn-grader" data-tooltip="Open 9-Mark descriptive question auto-grader with keyword tags [G]">
+                    <span>📝 9M DRILL [G]</span>
+                </button>
+                <button class="cyber-btn" id="btn-codex" data-tooltip="Open complete syllabus formula cheat-sheet & concept cards [C]">
+                    <span>🧠 CODEX [C]</span>
+                </button>
+                <button class="cyber-btn" id="btn-quests" data-tooltip="Open active quest log, objectives & decision journal [TAB]">
+                    <span id="quests-btn-label">📜 QUESTS [TAB]</span>
+                </button>
+            </div>
+
+            <div class="footer-telemetry">
+                <div class="score-pill" data-tooltip="Total Exam Marks Earned (Target: 24/60 to Pass, 48/60 for S-Grade)">
+                    <span class="score-lbl">KTU EXAM SCORE:</span>
+                    <span class="score-val" id="val-score">0 / 60</span>
+                </div>
+                <div class="scheme-badge">
+                    <span>KTU PCCST501 // 2024 SCHEME</span>
+                </div>
+            </div>
+        </footer>
+
+    </div>
+
+    <!-- Core Modular Scripts -->
+    <script src="js/engine/GameState.js"></script>
+    <script src="js/audio/CyberAudio.js"></script>
+    <script src="js/engine/Renderer.js"></script>
+    <script src="js/engine/ParticleSystem.js"></script>
+    <script src="js/engine/InputManager.js"></script>
+    <script src="js/entities/Player.js"></script>
+    <script src="js/entities/EnemyDaemon.js"></script>
+    <script src="js/combat/CombatSystem.js"></script>
+    <script src="js/combat/BossOSPF.js"></script>
+    <script src="js/world/Sector1_Physical.js"></script>
+    <script src="js/world/Sector2_DataLink.js"></script>
+    <script src="js/world/Sector3_Network.js"></script>
+    <script src="js/world/Sector4_Application.js"></script>
+    <script src="js/world/P2PSwarmCamp.js"></script>
+    <script src="js/combat/CollisionBusHazard.js"></script>
+    <script src="js/world/BitStuffingCorridor.js"></script>
+    <script src="js/minigames/LineCodingMinigame.js"></script>
+    <script src="js/minigames/ModulationMinigame.js"></script>
+    <script src="js/minigames/CRCMinigame.js"></script>
+    <script src="js/minigames/SwitchLearningMinigame.js"></script>
+    <script src="js/minigames/FragmentationMinigame.js"></script>
+    <script src="js/minigames/DijkstraMinigame.js"></script>
+    <script src="js/minigames/WebInfiltrationMinigame.js"></script>
+    <script src="js/minigames/BitTorrentMinigame.js"></script>
+    <script src="js/minigames/ASN1Debugger.js"></script>
+    <script src="js/minigames/SNMPMinigame.js"></script>
+    <script src="js/world/CapacityGate.js"></script>
+    <script src="js/world/QuestManager.js"></script>
+    <script src="js/world/DialogueSystem.js"></script>
+    <script src="js/data/NeuralCodex.js"></script>
+    <script src="js/world/CodexViewer.js"></script>
+    <script src="js/minigames/KTURubricGrader.js"></script>
+    <script src="js/engine/SaveManager.js"></script>
+    <script src="js/engine/ExamSimulator.js"></script>
+    <script src="js/world/StudyGuideSystem.js"></script>
+    <script src="js/world/WorldInspector.js"></script>
+    <script src="js/engine/GameLoop.js"></script>
+
+    <!-- Auto-Boot Game Engine -->
+    <script>
+        function bootGridRunner() {
+            if (window.GameLoop && typeof window.GameLoop.init === 'function') {
+                window.GameLoop.init();
+            }
+        }
+        if (document.readyState === 'loading') {
+            document.addEventListener('DOMContentLoaded', bootGridRunner);
+        } else {
+            bootGridRunner();
+        }
+    </script>
+</body>
+</html>

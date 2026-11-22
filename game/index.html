@@ -1,0 +1,200 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>OPERATION NET-INFILTRATOR | The Grid Protocol (PCCST501)</title>
+    <link rel="stylesheet" href="style.css">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Fira+Code:wght@400;600;700&display=swap" rel="stylesheet">
+</head>
+<body>
+
+    <!-- Cyberpunk CRT & Scanner Audio Header -->
+    <header class="cyber-header">
+        <div class="header-top">
+            <div class="brand-title">
+                <div class="grid-icon"></div>
+                <div class="title-text">
+                    <h1>OPERATION NET-INFILTRATOR</h1>
+                    <span>KTU PCCST501 Computer Networks // 2024 Scheme</span>
+                </div>
+            </div>
+
+            <!-- Controls & Live HUD Stats -->
+            <div class="hud-controls">
+                <div class="stat-badge">
+                    <span class="stat-label">Agent:</span>
+                    <span class="stat-value">0xVOID</span>
+                </div>
+                <div class="stat-badge">
+                    <span class="stat-label">Exam Score:</span>
+                    <span class="stat-value gold" id="hudScore">0 / 60</span>
+                </div>
+                <div class="stat-badge">
+                    <span class="stat-label">Integrity:</span>
+                    <span class="stat-value" id="hudIntegrity">100%</span>
+                </div>
+                
+                <button class="btn-cyber" id="btnAudioMusic" title="Toggle Synthwave Soundtrack">
+                    <span>🎵 MUSIC: OFF</span>
+                </button>
+                <button class="btn-cyber" id="btnAudioMute" title="Mute/Unmute All Audio">
+                    <span>🔊 SOUND</span>
+                </button>
+            </div>
+        </div>
+
+        <!-- Exam Goal Progress Meter -->
+        <div class="exam-hud-bar">
+            <span class="stat-label">TARGET: 60 MARKS</span>
+            <div class="hud-progress-bg">
+                <div class="hud-progress-fill" id="hudProgressBar"></div>
+            </div>
+            <span class="hud-target-text" id="hudProgressPercent">0% (Passing Threshold: 40%)</span>
+        </div>
+    </header>
+
+    <!-- Main Infiltration Workspace -->
+    <main class="grid-container">
+        
+        <!-- Left Matrix Navigation / Sector Selector -->
+        <aside class="sector-matrix-card">
+            <div class="matrix-title">
+                <span>SECURITY SECTORS</span>
+                <span id="activeSectorBadge">SECTOR 1</span>
+            </div>
+
+            <div class="sector-list" id="sectorListContainer">
+                <!-- Dynamically populated sectors -->
+            </div>
+
+            <!-- Mission Mode Switcher -->
+            <div class="mode-switch-card">
+                <div class="matrix-title">
+                    <span>SIMULATION MODE</span>
+                </div>
+                <div style="display:flex; flex-direction:column; gap:8px;">
+                    <button class="btn-cyber" id="btnModeAdventure" style="width:100%; justify-content:center;">
+                        ⚔️ INFILTRATION RPG
+                    </button>
+                    <button class="btn-cyber gold" id="btnModeExam" style="width:100%; justify-content:center;">
+                        ⏱️ KTU 60M MOCK EXAM
+                    </button>
+                </div>
+            </div>
+        </aside>
+
+        <!-- Right Terminal & Interactive Encounter Console -->
+        <section class="mission-terminal">
+            
+            <div class="terminal-window">
+                <!-- Terminal Window Bar -->
+                <div class="terminal-header">
+                    <div class="terminal-dots">
+                        <span class="dot red"></span>
+                        <span class="dot yellow"></span>
+                        <span class="dot green"></span>
+                    </div>
+                    <div class="terminal-title" id="terminalTitle">
+                        TRANSMISSION FEED // PERIMETER GATEWAY
+                    </div>
+                    <div style="font-size:0.75rem; color:var(--text-muted);" id="missionCounter">
+                        ENCOUNTER 1 OF 5
+                    </div>
+                </div>
+
+                <div class="terminal-body">
+                    
+                    <!-- Story Dispatch Banner -->
+                    <div class="dispatch-banner" id="dispatchBanner">
+                        <div class="dispatch-tag" id="dispatchTag">SECURITY BREACH IN PROGRESS</div>
+                        <div class="dispatch-story" id="dispatchStory">
+                            Connecting to OmniNet physical link... Prepare to intercept gateway protocols.
+                        </div>
+                    </div>
+
+                    <!-- Question Container -->
+                    <div class="question-card">
+                        <div class="question-meta">
+                            <span class="badge-type" id="questionTypeBadge">QUICK-HACK (PART A)</span>
+                            <span class="badge-mark" id="questionMarksBadge">3 MARKS</span>
+                        </div>
+                        <div class="question-prompt" id="questionPrompt">
+                            Loading tactical query...
+                        </div>
+
+                        <!-- Interactive Options for Quick-Hacks -->
+                        <div class="options-grid" id="optionsContainer">
+                            <!-- Populated dynamically -->
+                        </div>
+
+                        <!-- Boss Battle Multi-part Subdivision Workspace -->
+                        <div class="boss-workspace" id="bossWorkspace" style="display:none;">
+                            <div id="bossSubdivisionsContainer">
+                                <!-- Populated dynamically -->
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Interactive Visualizer Canvas (Dijkstra graph, Waveforms, CRC) -->
+                    <div class="visualizer-wrapper" id="visualizerWrapper" style="display:none;">
+                        <div class="canvas-header">
+                            <span id="canvasTitle">TACTICAL VISUAL MATRIX</span>
+                            <span style="font-size:0.7rem; color:var(--text-muted);">INTERACTIVE TELEMETRY</span>
+                        </div>
+                        <canvas id="interactiveCanvas"></canvas>
+                    </div>
+
+                    <!-- Action Buttons -->
+                    <div class="action-bar">
+                        <button class="btn-cyber" id="btnNeuralIntel">
+                            🧠 TACTICAL INTEL (CHEAT-SHEET)
+                        </button>
+
+                        <div style="display:flex; gap:10px;">
+                            <button class="btn-cyber magenta" id="btnSubmitBoss" style="display:none;">
+                                💥 TRANSMIT ANSWER TO VALUATION
+                            </button>
+                            <button class="btn-cyber gold" id="btnNextEncounter" style="display:none;">
+                                ⏭️ NEXT ENCOUNTER
+                            </button>
+                        </div>
+                    </div>
+
+                    <!-- Valuation Rubric & Feedback Panel (KTU Official Scheme) -->
+                    <div class="rubric-panel" id="rubricPanel" style="display:none;">
+                        <div class="rubric-header">
+                            <h3 id="rubricTitle">OFFICIAL KTU SCHEME OF VALUATION</h3>
+                            <span class="badge-mark" id="rubricEarnedBadge">+3.0 / 3.0 MARKS</span>
+                        </div>
+                        <div id="rubricBody">
+                            <!-- Populated with official criteria breakdown -->
+                        </div>
+                    </div>
+
+                    <!-- Tactical Neural Intel Drawer -->
+                    <div class="intel-card" id="intelCard" style="display:none;">
+                        <div class="intel-header">
+                            <span>⚡ CLASSIFIED LECTURE INTEL & FORMULAS</span>
+                        </div>
+                        <div class="intel-content" id="intelContent">
+                            Intel data decrypted from lecture notes...
+                        </div>
+                    </div>
+
+                </div>
+            </div>
+
+        </section>
+
+    </main>
+
+    <!-- Core Scripts -->
+    <script src="audio.js"></script>
+    <script src="questions_data.js"></script>
+    <script src="visualizer.js"></script>
+    <script src="engine.js"></script>
+</body>
+</html>
