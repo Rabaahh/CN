@@ -7,6 +7,8 @@
 class WorldInspector {
     constructor() {
         this.isGuidanceVisible = true;
+        this.isInspectCardVisible = true;
+        this.lastCloseBtnRect = null;
         this.hoveredObject = null;
         this.lastNearbyObject = null;
         this.guidanceStep = 1;
@@ -347,6 +349,25 @@ class WorldInspector {
         };
     }
 
+    toggleInspectCard(force) {
+        this.isInspectCardVisible = (force !== undefined) ? force : !this.isInspectCardVisible;
+        if (!this.isInspectCardVisible) {
+            this.lastCloseBtnRect = null;
+        }
+        return this.isInspectCardVisible;
+    }
+
+    checkCloseClick(screenX, screenY) {
+        if (!this.isInspectCardVisible || !this.lastCloseBtnRect) return false;
+        const r = this.lastCloseBtnRect;
+        if (screenX >= r.x && screenX <= r.x + r.w && screenY >= r.y && screenY <= r.y + r.h) {
+            this.isInspectCardVisible = false;
+            this.lastCloseBtnRect = null;
+            return true;
+        }
+        return false;
+    }
+
     // ----------------------------------------------------------------------
     // Main HUD Render Pipeline
     // ----------------------------------------------------------------------
@@ -358,9 +379,15 @@ class WorldInspector {
         }
 
         // 2. Render Holographic Inspect Card on Hover or Proximity
-        const inspected = this.inspectAt(sectorId, mouseWorldX, mouseWorldY, playerX, playerY);
-        if (inspected) {
-            this.renderInspectCard(ctx, screenWidth, screenHeight, inspected);
+        if (this.isInspectCardVisible) {
+            const inspected = this.inspectAt(sectorId, mouseWorldX, mouseWorldY, playerX, playerY);
+            if (inspected) {
+                this.renderInspectCard(ctx, screenWidth, screenHeight, inspected);
+            } else {
+                this.lastCloseBtnRect = null;
+            }
+        } else {
+            this.lastCloseBtnRect = null;
         }
     }
 
@@ -473,6 +500,35 @@ class WorldInspector {
         ctx.textAlign = 'left';
         ctx.textBaseline = 'top';
         ctx.fillText(obj.name, cardX + 16, cardY + 12);
+
+        // Interactive Hide Button in Top Right of Card [✕ HIDE (H)]
+        const closeBtnW = 86;
+        const closeBtnH = 22;
+        const closeBtnX = cardX + cardW - closeBtnW - 14;
+        const closeBtnY = cardY + 10;
+        this.lastCloseBtnRect = { x: closeBtnX, y: closeBtnY, w: closeBtnW, h: closeBtnH };
+
+        ctx.fillStyle = 'rgba(239, 68, 68, 0.18)';
+        ctx.strokeStyle = 'rgba(239, 68, 68, 0.6)';
+        ctx.lineWidth = 1.2;
+        ctx.beginPath();
+        if (ctx.roundRect) {
+            ctx.roundRect(closeBtnX, closeBtnY, closeBtnW, closeBtnH, 4);
+        } else {
+            ctx.rect(closeBtnX, closeBtnY, closeBtnW, closeBtnH);
+        }
+        ctx.fill();
+        ctx.stroke();
+
+        ctx.fillStyle = '#fca5a5';
+        ctx.font = `bold 11px ${FONT_SANS}`;
+        ctx.textAlign = 'center';
+        ctx.textBaseline = 'middle';
+        ctx.fillText('✕ HIDE [H]', closeBtnX + closeBtnW / 2, closeBtnY + closeBtnH / 2);
+
+        // Reset text alignment for subsequent elements
+        ctx.textAlign = 'left';
+        ctx.textBaseline = 'top';
 
         // Category Tag Badge
         ctx.font = `bold 11px ${FONT_SANS}`;

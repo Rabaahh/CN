@@ -196,6 +196,7 @@ class GameLoopEngine {
         }
 
         this.syncHUD();
+        this.updateInfoButton();
         this.start();
         console.log('[GameLoop] Initialized successfully with CyberRenderer and ParticleSystem.');
         return true;
@@ -313,6 +314,7 @@ class GameLoopEngine {
             btnMusic: document.getElementById('btn-music'),
             btnSfx: document.getElementById('btn-sfx'),
             btnQuests: document.getElementById('btn-quests'),
+            btnToggleInfo: document.getElementById('btn-toggle-info'),
             btnStudy: document.getElementById('btn-study'),
             btnCodex: document.getElementById('btn-codex'),
             btnGrader: document.getElementById('btn-grader'),
@@ -394,10 +396,15 @@ class GameLoopEngine {
                     }
                 }
 
-                // Toggle Mission Guidance HUD (H key)
+                // Toggle Object Inspector Card & Mission Guidance (H key)
                 if (e.key === 'h' || e.key === 'H') {
                     if (this.worldInspector) {
-                        this.worldInspector.isGuidanceVisible = !this.worldInspector.isGuidanceVisible;
+                        this.worldInspector.isInspectCardVisible = !this.worldInspector.isInspectCardVisible;
+                        this.updateInfoButton();
+                        const status = this.worldInspector.isInspectCardVisible ? 'SHOWN' : 'HIDDEN (Press [H] to restore)';
+                        if (this.hud && typeof this.hud.showNotification === 'function') {
+                            this.hud.showNotification(`👁️ Object Info Box: ${status}`, 2000);
+                        }
                     }
                 }
 
@@ -483,6 +490,17 @@ class GameLoopEngine {
                 const rect = this.canvas.getBoundingClientRect();
                 const screenX = (e.clientX - rect.left) / (rect.width / this.logicalWidth);
                 const screenY = (e.clientY - rect.top) / (rect.height / this.logicalHeight);
+
+                // Forward click to Object Inspector card close button
+                if (this.worldInspector && this.worldInspector.isInspectCardVisible) {
+                    if (this.worldInspector.checkCloseClick(screenX, screenY)) {
+                        this.updateInfoButton();
+                        if (this.hud && typeof this.hud.showNotification === 'function') {
+                            this.hud.showNotification('👁️ Object Info Box: HIDDEN (Press [H] to restore)', 2500);
+                        }
+                        return;
+                    }
+                }
 
                 // Forward click to Exam Simulator if open
                 if (this.examSimulator && this.examSimulator.isOpen) {
@@ -572,6 +590,19 @@ class GameLoopEngine {
             });
         }
 
+        if (this.dom.btnToggleInfo) {
+            this.dom.btnToggleInfo.addEventListener('click', () => {
+                if (this.worldInspector) {
+                    this.worldInspector.isInspectCardVisible = !this.worldInspector.isInspectCardVisible;
+                    this.updateInfoButton();
+                    const status = this.worldInspector.isInspectCardVisible ? 'SHOWN' : 'HIDDEN';
+                    if (this.hud && typeof this.hud.showNotification === 'function') {
+                        this.hud.showNotification(`👁️ Object Info Box: ${status} [H]`, 2000);
+                    }
+                }
+            });
+        }
+
         if (this.dom.btnSave) {
             this.dom.btnSave.addEventListener('click', () => {
                 if (this.saveManager) {
@@ -593,6 +624,23 @@ class GameLoopEngine {
                     this.syncHUD();
                 }
             });
+        }
+    }
+
+    updateInfoButton() {
+        const btn = this.dom ? this.dom.btnToggleInfo : (typeof document !== 'undefined' ? document.getElementById('btn-toggle-info') : null);
+        const lbl = typeof document !== 'undefined' ? document.getElementById('info-btn-label') : null;
+        if (!btn || !this.worldInspector) return;
+        const isVis = this.worldInspector.isInspectCardVisible;
+        if (lbl) {
+            lbl.textContent = isVis ? '👁️ INFO: ON [H]' : '👁️ INFO: OFF [H]';
+        }
+        if (isVis) {
+            btn.classList.add('cyan-glow');
+            btn.classList.remove('muted');
+        } else {
+            btn.classList.remove('cyan-glow');
+            btn.classList.add('muted');
         }
     }
 

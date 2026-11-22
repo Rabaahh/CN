@@ -57,4 +57,24 @@ const mockCtx = {
 inspector.render(mockCtx, 1280, 720, 560, 360, 150, 360, 1, null);
 console.log('✓ WorldInspector canvas render executed cleanly with zero errors.');
 
+// 3. Verify Bottom-Right Dialogue Box Hide & Toggle Features
+assert.strictEqual(inspector.isInspectCardVisible, true, 'Inspect card should be visible by default');
+assert.ok(inspector.lastCloseBtnRect, 'Close button rectangle should be recorded after rendering');
+
+// Test click on close button
+const r = inspector.lastCloseBtnRect;
+const clicked = inspector.checkCloseClick(r.x + 10, r.y + 5);
+assert.strictEqual(clicked, true, 'Clicking close button rect must return true');
+assert.strictEqual(inspector.isInspectCardVisible, false, 'Card must be hidden after clicking close button');
+
+// Render when hidden
+inspector.render(mockCtx, 1280, 720, 560, 360, 150, 360, 1, null);
+assert.strictEqual(inspector.lastCloseBtnRect, null, 'Close rect should be null when hidden');
+
+// Toggle back on with toggleInspectCard
+inspector.toggleInspectCard(true);
+assert.strictEqual(inspector.isInspectCardVisible, true, 'toggleInspectCard(true) must restore visibility');
+
+console.log('✓ Bottom-right dialogue card hide, toggle, and click detection verified (100%).');
+
 console.log('\n🏆 ALL UX POLISH TESTS PASSED 100%!');
