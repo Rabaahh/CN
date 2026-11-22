@@ -197,6 +197,7 @@ class GameLoopEngine {
 
         this.syncHUD();
         this.updateInfoButton();
+        this.updateStepsButton();
         this.start();
         console.log('[GameLoop] Initialized successfully with CyberRenderer and ParticleSystem.');
         return true;
@@ -314,6 +315,7 @@ class GameLoopEngine {
             btnMusic: document.getElementById('btn-music'),
             btnSfx: document.getElementById('btn-sfx'),
             btnQuests: document.getElementById('btn-quests'),
+            btnToggleSteps: document.getElementById('btn-toggle-steps'),
             btnToggleInfo: document.getElementById('btn-toggle-info'),
             btnStudy: document.getElementById('btn-study'),
             btnCodex: document.getElementById('btn-codex'),
@@ -396,7 +398,7 @@ class GameLoopEngine {
                     }
                 }
 
-                // Toggle Object Inspector Card & Mission Guidance (H key)
+                // Toggle Object Inspector Card (H key)
                 if (e.key === 'h' || e.key === 'H') {
                     if (this.worldInspector) {
                         this.worldInspector.isInspectCardVisible = !this.worldInspector.isInspectCardVisible;
@@ -404,6 +406,18 @@ class GameLoopEngine {
                         const status = this.worldInspector.isInspectCardVisible ? 'SHOWN' : 'HIDDEN (Press [H] to restore)';
                         if (this.hud && typeof this.hud.showNotification === 'function') {
                             this.hud.showNotification(`👁️ Object Info Box: ${status}`, 2000);
+                        }
+                    }
+                }
+
+                // Toggle Top Mission Guidance Steps Bar (U key)
+                if (e.key === 'u' || e.key === 'U') {
+                    if (this.worldInspector) {
+                        this.worldInspector.isGuidanceVisible = !this.worldInspector.isGuidanceVisible;
+                        this.updateStepsButton();
+                        const status = this.worldInspector.isGuidanceVisible ? 'SHOWN' : 'HIDDEN (Press [U] to restore)';
+                        if (this.hud && typeof this.hud.showNotification === 'function') {
+                            this.hud.showNotification(`📍 Top Mission Steps: ${status}`, 2000);
                         }
                     }
                 }
@@ -490,6 +504,17 @@ class GameLoopEngine {
                 const rect = this.canvas.getBoundingClientRect();
                 const screenX = (e.clientX - rect.left) / (rect.width / this.logicalWidth);
                 const screenY = (e.clientY - rect.top) / (rect.height / this.logicalHeight);
+
+                // Forward click to Top Guidance box close button
+                if (this.worldInspector && this.worldInspector.isGuidanceVisible) {
+                    if (this.worldInspector.checkGuidanceCloseClick(screenX, screenY)) {
+                        this.updateStepsButton();
+                        if (this.hud && typeof this.hud.showNotification === 'function') {
+                            this.hud.showNotification('📍 Top Mission Steps: HIDDEN (Press [U] to restore)', 2500);
+                        }
+                        return;
+                    }
+                }
 
                 // Forward click to Object Inspector card close button
                 if (this.worldInspector && this.worldInspector.isInspectCardVisible) {
@@ -603,6 +628,19 @@ class GameLoopEngine {
             });
         }
 
+        if (this.dom.btnToggleSteps) {
+            this.dom.btnToggleSteps.addEventListener('click', () => {
+                if (this.worldInspector) {
+                    this.worldInspector.isGuidanceVisible = !this.worldInspector.isGuidanceVisible;
+                    this.updateStepsButton();
+                    const status = this.worldInspector.isGuidanceVisible ? 'SHOWN' : 'HIDDEN';
+                    if (this.hud && typeof this.hud.showNotification === 'function') {
+                        this.hud.showNotification(`📍 Top Mission Steps: ${status} [U]`, 2000);
+                    }
+                }
+            });
+        }
+
         if (this.dom.btnSave) {
             this.dom.btnSave.addEventListener('click', () => {
                 if (this.saveManager) {
@@ -634,6 +672,23 @@ class GameLoopEngine {
         const isVis = this.worldInspector.isInspectCardVisible;
         if (lbl) {
             lbl.textContent = isVis ? '👁️ INFO: ON [H]' : '👁️ INFO: OFF [H]';
+        }
+        if (isVis) {
+            btn.classList.add('cyan-glow');
+            btn.classList.remove('muted');
+        } else {
+            btn.classList.remove('cyan-glow');
+            btn.classList.add('muted');
+        }
+    }
+
+    updateStepsButton() {
+        const btn = this.dom ? this.dom.btnToggleSteps : (typeof document !== 'undefined' ? document.getElementById('btn-toggle-steps') : null);
+        const lbl = typeof document !== 'undefined' ? document.getElementById('steps-btn-label') : null;
+        if (!btn || !this.worldInspector) return;
+        const isVis = this.worldInspector.isGuidanceVisible;
+        if (lbl) {
+            lbl.textContent = isVis ? '📍 STEPS: ON [U]' : '📍 STEPS: OFF [U]';
         }
         if (isVis) {
             btn.classList.add('cyan-glow');
@@ -1234,17 +1289,6 @@ class GameLoopEngine {
         if (this.renderer) {
             this.renderer.end(ctx);
         }
-
-        // 7. Render In-Game Watermark & Telemetry Legend
-        ctx.fillStyle = '#00ffcc';
-        ctx.font = 'bold 13px "Fira Code", monospace';
-        ctx.shadowColor = '#00ffcc';
-        ctx.shadowBlur = 4;
-        const activeTheme = this.renderer ? (this.renderer.themes[this.renderer.currentSectorId]?.name || 'Physical Substratum') : 'Physical Substratum';
-        ctx.fillText(`TRON RENDERER: 60 FPS | SECTOR: ${activeTheme.toUpperCase()} | PARTICLES: ${this.particles ? this.particles.activeCount : 0}/600`, 24, h - 22);
-        ctx.fillStyle = '#d8e8fc';
-        ctx.shadowBlur = 0;
-        ctx.fillText(`PRESS [T] TEST PARTICLE BURST & SHAKE // KTU PCCST501`, w - 460, h - 22);
 
         // 7.5 Render Sector 2 CSMA/CD HUD Telemetry & Bit Stuffing HUD
         if (this.activeSectorId === 2 && this.collisionHazard) {

@@ -9,6 +9,7 @@ class WorldInspector {
         this.isGuidanceVisible = true;
         this.isInspectCardVisible = true;
         this.lastCloseBtnRect = null;
+        this.lastGuidanceCloseRect = null;
         this.hoveredObject = null;
         this.lastNearbyObject = null;
         this.guidanceStep = 1;
@@ -368,6 +369,25 @@ class WorldInspector {
         return false;
     }
 
+    toggleGuidance(force) {
+        this.isGuidanceVisible = (force !== undefined) ? force : !this.isGuidanceVisible;
+        if (!this.isGuidanceVisible) {
+            this.lastGuidanceCloseRect = null;
+        }
+        return this.isGuidanceVisible;
+    }
+
+    checkGuidanceCloseClick(screenX, screenY) {
+        if (!this.isGuidanceVisible || !this.lastGuidanceCloseRect) return false;
+        const r = this.lastGuidanceCloseRect;
+        if (screenX >= r.x && screenX <= r.x + r.w && screenY >= r.y && screenY <= r.y + r.h) {
+            this.isGuidanceVisible = false;
+            this.lastGuidanceCloseRect = null;
+            return true;
+        }
+        return false;
+    }
+
     // ----------------------------------------------------------------------
     // Main HUD Render Pipeline
     // ----------------------------------------------------------------------
@@ -376,6 +396,8 @@ class WorldInspector {
         if (this.isGuidanceVisible) {
             const guide = this.getStepGuidance(sectorId, playerX, playerY, worldRef);
             this.renderGuidanceBox(ctx, screenWidth, guide);
+        } else {
+            this.lastGuidanceCloseRect = null;
         }
 
         // 2. Render Holographic Inspect Card on Hover or Proximity
@@ -428,14 +450,39 @@ class WorldInspector {
         ctx.textBaseline = 'top';
         ctx.fillText(`📍 ${guide.step}`, boxX + 16, boxY + 10);
 
-        // Academic Concept Tag (Right Aligned Sky Blue Pill Badge)
+        // Interactive Close / Hide Button for Top Guidance Box [✕ HIDE (U)]
+        const closeGuidanceW = 86;
+        const closeGuidanceH = 22;
+        const closeGuidanceX = boxX + boxW - closeGuidanceW - 12;
+        const closeGuidanceY = boxY + 8;
+        this.lastGuidanceCloseRect = { x: closeGuidanceX, y: closeGuidanceY, w: closeGuidanceW, h: closeGuidanceH };
+
+        ctx.fillStyle = 'rgba(239, 68, 68, 0.18)';
+        ctx.strokeStyle = 'rgba(239, 68, 68, 0.6)';
+        ctx.lineWidth = 1.2;
+        ctx.beginPath();
+        if (ctx.roundRect) {
+            ctx.roundRect(closeGuidanceX, closeGuidanceY, closeGuidanceW, closeGuidanceH, 4);
+        } else {
+            ctx.rect(closeGuidanceX, closeGuidanceY, closeGuidanceW, closeGuidanceH);
+        }
+        ctx.fill();
+        ctx.stroke();
+
+        ctx.fillStyle = '#fca5a5';
+        ctx.font = `bold 11px ${FONT_SANS}`;
+        ctx.textAlign = 'center';
+        ctx.textBaseline = 'middle';
+        ctx.fillText('✕ HIDE [U]', closeGuidanceX + closeGuidanceW / 2, closeGuidanceY + closeGuidanceH / 2);
+
+        // Academic Concept Tag (Positioned to the left of Close Button)
         if (guide.hint) {
             ctx.font = `600 12px ${FONT_SANS}`;
             const hintText = `💡 ${guide.hint}`;
             const textW = ctx.measureText ? ctx.measureText(hintText).width : hintText.length * 7;
             const pillW = textW + 16;
             const pillH = 22;
-            const pillX = boxX + boxW - pillW - 14;
+            const pillX = closeGuidanceX - pillW - 10;
             const pillY = boxY + 8;
 
             ctx.fillStyle = 'rgba(56, 189, 248, 0.15)';
@@ -451,14 +498,16 @@ class WorldInspector {
             ctx.stroke();
 
             ctx.fillStyle = '#38bdf8';
-            ctx.textAlign = 'right';
-            ctx.fillText(hintText, boxX + boxW - 22, boxY + 12);
+            ctx.textAlign = 'center';
+            ctx.textBaseline = 'middle';
+            ctx.fillText(hintText, pillX + pillW / 2, pillY + pillH / 2);
         }
 
         // Main Plain-English Action Instruction (Clean Crisp White, Larger Size)
         ctx.fillStyle = '#ffffff';
         ctx.font = `bold 14px ${FONT_SANS}`;
         ctx.textAlign = 'left';
+        ctx.textBaseline = 'top';
         ctx.fillText(guide.text, boxX + 16, boxY + 33);
 
         ctx.restore();

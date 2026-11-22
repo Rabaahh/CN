@@ -110,6 +110,7 @@ Computer Networks/
 |:---|:---|
 | <kbd>W</kbd> <kbd>A</kbd> <kbd>S</kbd> <kbd>D</kbd> / <kbd>↑</kbd> <kbd>←</kbd> <kbd>↓</kbd> <kbd>→</kbd> | Move Unit 0xVOID |
 | <kbd>B</kbd> | Toggle Syllabus Study Guide & 28-Topic Sidebar |
+| <kbd>U</kbd> | Toggle Top Mission Steps Guidance Bar |
 | <kbd>H</kbd> | Toggle Bottom-Right Object Inspector Dialogue Box |
 | <kbd>X</kbd> | Launch 60-Mark Timed KTU Mock Exam Simulator |
 | <kbd>G</kbd> | Open KTU 9-Mark Rubric Auto-Grader Drill |
